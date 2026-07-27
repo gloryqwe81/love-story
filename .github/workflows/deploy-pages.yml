@@ -1,0 +1,65 @@
+name: Deploy love story to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Enable pnpm
+        run: corepack enable pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set GitHub Pages path
+        shell: bash
+        run: |
+          repository_name="${GITHUB_REPOSITORY#*/}"
+          if [[ "$repository_name" == "${GITHUB_REPOSITORY_OWNER}.github.io" ]]; then
+            echo "NEXT_PUBLIC_BASE_PATH=" >> "$GITHUB_ENV"
+          else
+            echo "NEXT_PUBLIC_BASE_PATH=/$repository_name" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build
+        run: pnpm build:pages
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./out
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
