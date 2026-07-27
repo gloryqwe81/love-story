@@ -14,9 +14,21 @@ const sans = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Для тебя, любовь моя ♥",
+  metadataBase: new URL("https://gloryqwe81.github.io"),
+  title: "Николь, это для тебя ♥",
   description:
-    "Маленькая история о большой любви — фотографии, воспоминания и самые важные слова.",
+    "Личная вселенная для Николь — фотографии, музыка и самые важные слова о любви.",
+  openGraph: {
+    title: "Николь, это для тебя ♥",
+    description: "Личная вселенная, созданная с любовью.",
+    images: [{ url: "/love-story/og.png", width: 1536, height: 1024 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Николь, это для тебя ♥",
+    description: "Личная вселенная, созданная с любовью.",
+    images: ["/love-story/og.png"],
+  },
 };
 
 export default function RootLayout({

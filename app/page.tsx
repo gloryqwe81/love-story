@@ -64,6 +64,8 @@ function PhotoCard({
 }
 
 export default function Home() {
+  const [gateOpen, setGateOpen] = useState(false);
+  const [showGate, setShowGate] = useState(true);
   const [letterOpen, setLetterOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [songReady, setSongReady] = useState(true);
@@ -72,6 +74,7 @@ export default function Home() {
   const [toast, setToast] = useState("");
   const [burst, setBurst] = useState<BurstHeart[]>([]);
   const [kissCount, setKissCount] = useState(0);
+  const [pulseLevel, setPulseLevel] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -87,6 +90,13 @@ export default function Home() {
       })),
     [],
   );
+
+  useEffect(() => {
+    document.body.style.overflow = showGate ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showGate]);
 
   useEffect(() => {
     const revealItems = document.querySelectorAll("[data-reveal]");
@@ -174,6 +184,53 @@ export default function Home() {
 
   return (
     <main ref={mainRef} onPointerMove={onPointerMove}>
+      {showGate && (
+        <div
+          className={`cinematic-gate ${gateOpen ? "is-opening" : ""}`}
+          aria-hidden={gateOpen}
+        >
+          <div className="gate-aurora" aria-hidden="true" />
+          <div className="gate-stars" aria-hidden="true">
+            {ambientHearts.slice(0, 10).map((heart) => (
+              <i
+                key={heart.id}
+                style={
+                  {
+                    "--left": heart.left,
+                    "--top": heart.top,
+                    "--float-delay": heart.delay,
+                  } as CSSProperties
+                }
+              />
+            ))}
+          </div>
+          <div className="gate-content">
+            <p>PRIVATE PREMIERE · 01 / ∞</p>
+            <span className="gate-monogram">N</span>
+            <h2>
+              Николь,
+              <em>это для тебя.</em>
+            </h2>
+            <p className="gate-note">
+              Здесь каждая деталь говорит то, что я чувствую рядом с тобой.
+            </p>
+            <button
+              type="button"
+              className="gate-button"
+              onClick={() => {
+                setGateOpen(true);
+                createHeartBurst(45);
+                window.setTimeout(() => setShowGate(false), 1050);
+              }}
+            >
+              <span>Войти в нашу вселенную</span>
+              <i aria-hidden="true">♥</i>
+            </button>
+          </div>
+          <div className="gate-signature">создано с любовью · только для неё</div>
+        </div>
+      )}
+
       <div
         className="page-progress"
         style={{ width: `${pageProgress}%` }}
@@ -200,6 +257,21 @@ export default function Home() {
           </span>
         ))}
       </div>
+
+      <nav className="topbar" aria-label="Навигация по истории">
+        <a className="topbar-brand" href="#top" aria-label="В начало">
+          <span>N</span>
+          <small>для Николь</small>
+        </a>
+        <div>
+          <a href="#photos">моменты</a>
+          <a href="#pulse">чувства</a>
+          <a href="#letter">письмо</a>
+        </div>
+        <a className="topbar-heart" href="#forever" aria-label="К финалу">
+          ♥
+        </a>
+      </nav>
 
       <section className="hero" id="top">
         <div className="hero-orb orb-one" aria-hidden="true" />
@@ -258,6 +330,10 @@ export default function Home() {
           <i />
           <span>∞</span>
         </div>
+        <div className="scroll-whisper" aria-hidden="true">
+          <span>листай медленно</span>
+          <i />
+        </div>
       </section>
 
       <section className="intro section-shell">
@@ -273,6 +349,63 @@ export default function Home() {
             мир звучит <em>по‑другому.</em>
           </h2>
           <p>{loveStory.intro}</p>
+        </div>
+      </section>
+
+      <section className="chemistry-section" id="pulse">
+        <div className="chemistry-glow" aria-hidden="true" />
+        <div className="section-shell chemistry-grid">
+          <div className="chemistry-copy" data-reveal>
+            <p className="eyebrow">МЕЖДУ НАМИ · 120 УДАРОВ В МИНУТУ</p>
+            <h2>
+              Ты входишь —
+              <em>и у меня сбивается ритм.</em>
+            </h2>
+            <p>
+              В твоём взгляде есть что-то совершенно нечестное: он крадёт
+              мысли, время и желание смотреть куда-либо ещё.
+            </p>
+          </div>
+          <div
+            className="pulse-experience"
+            data-reveal
+            style={
+              {
+                "--pulse-speed": `${Math.max(0.62, 1.5 - pulseLevel * 0.2)}s`,
+              } as CSSProperties
+            }
+          >
+            <div className="pulse-rings" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </div>
+            <button
+              type="button"
+              className="pulse-heart"
+              onClick={() => {
+                setPulseLevel((level) =>
+                  Math.min(level + 1, loveStory.pulsePhrases.length - 1),
+                );
+                createHeartBurst(16 + pulseLevel * 5);
+              }}
+              aria-label="Ускорить пульс"
+            >
+              <span>♥</span>
+              <small>коснись</small>
+            </button>
+            <p key={pulseLevel} className="pulse-phrase" aria-live="polite">
+              {loveStory.pulsePhrases[pulseLevel]}
+            </p>
+            <div className="pulse-meter" aria-hidden="true">
+              {loveStory.pulsePhrases.map((phrase, index) => (
+                <i
+                  className={index <= pulseLevel ? "is-active" : ""}
+                  key={phrase}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -330,7 +463,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="letter-section">
+      <section className="letter-section" id="letter">
         <div className="letter-aura" aria-hidden="true" />
         <div className="section-shell letter-grid">
           <div className="letter-heading" data-reveal>
@@ -352,7 +485,7 @@ export default function Home() {
           >
             <div className="letter-paper">
               <div className="letter-date">тебе · сегодня и всегда</div>
-              <h3>Моя любовь,</h3>
+              <h3>Моя Николь,</h3>
               {loveStory.letter.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
@@ -413,12 +546,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="finale">
+      <section className="finale" id="forever">
         <div className="finale-glow" aria-hidden="true" />
         <div className="finale-content" data-reveal>
           <p className="eyebrow">И ЭТО ТОЛЬКО НАЧАЛО</p>
           <h2>
-            Я люблю тебя
+            Николь, я люблю тебя
             <em>больше, чем помещается в слова.</em>
           </h2>
           <button
@@ -443,7 +576,7 @@ export default function Home() {
         <footer>
           <span>Сделано с любовью</span>
           <b>♥</b>
-          <span>для самой особенной</span>
+          <span>для Николь</span>
         </footer>
       </section>
 

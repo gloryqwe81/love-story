@@ -29,8 +29,10 @@ test("server-renders the finished love story", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Для тебя, любовь моя/);
-  assert.match(html, /моё самое красивое/);
+  assert.match(html, /<title>Николь, это для тебя/);
+  assert.match(html, /ты — мой любимый/);
+  assert.match(html, /Войти в нашу вселенную/);
+  assert.match(html, /сбивается ритм/);
   assert.match(html, /Открыть моё сердце/);
   assert.match(html, /ПИСЬМО ДЛЯ ТЕБЯ/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
@@ -48,6 +50,7 @@ test("keeps media instructions and GitHub Pages automation", async () => {
   assert.match(instructions, /public\/media\/photos/);
   assert.match(instructions, /our-song\.mp3/);
   assert.match(workflow, /actions\/deploy-pages@v4/);
+  await access(new URL("../public/og.png", import.meta.url));
   await access(new URL("../public/media/photos/.gitkeep", import.meta.url));
   await access(new URL("../public/media/music/.gitkeep", import.meta.url));
 });
